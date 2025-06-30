@@ -1,0 +1,32 @@
+name: Automatisk uppdatering av World Quests
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Kör dagligen kl 06:00 UTC
+  workflow_dispatch:     # Möjlighet att köra manuellt från GitHub
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Klona repo
+        uses: actions/checkout@v4
+      
+      - name: Sätt upp Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Installera beroenden
+        run: pip install requests beautifulsoup4
+      
+      - name: Kör scriptet
+        run: python update_world_quests.py
+
+      - name: Committa och pusha ändringar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add world_quests.html
+          git commit -m "Automatisk uppdatering $(date +'%Y-%m-%d %H:%M')" || echo "Inga ändringar att committa"
+          git push
